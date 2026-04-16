@@ -41,7 +41,7 @@ export const register = async (req, res) => {
         email: req.body.email,
         password: req.body.password,
         role: req.body.role,
-        createdBy: req.body.createdBy
+        createdBy: req.user.userId
     })
     res.status(201).json({ message: "User Created" })
 }
