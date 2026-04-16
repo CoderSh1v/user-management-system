@@ -5,10 +5,10 @@ import { authorizeRoles } from "../middlewares/role.middleware.js";
 
 const auth = express.Router();
 
-auth.use(jwtAuth)
+
 
 auth.post("/login",login)
 
-auth.post("/register",authorizeRoles(admin),register)
+auth.post("/register",jwtAuth,authorizeRoles("admin"),register)
 
 export {auth}
