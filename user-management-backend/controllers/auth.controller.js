@@ -17,6 +17,8 @@ export const login = async (req, res) => {
             message: "Invalid credentials"
         });
     }
+    if (user.status === "inactive") return res.status(403).json({ message: "User is inactive" });
+
     const token = jwt.sign({ 
         userId: user._id ,
         userRole : user.role
