@@ -54,11 +54,13 @@ export const updateUser = async (req, res) => {
         if (req.body.status) updateData.status = req.body.status;
 
         updateData.updatedBy = req.user.userId;
-
+        if (req.user.role === "manager" && updateData.role === "admin") {
+            return res.status(403).json({ message: "Managers cannot update admin users" });
+        }
         const updatedUser = await User.findByIdAndUpdate(
             id,
             updateData,
-            { returnDocument: 'after'}
+            { returnDocument: 'after' }
         ).select("-password");
 
         if (!updatedUser) return res.status(404).json({ message: "User not found" });
@@ -120,7 +122,7 @@ export const updateProfile = async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(
             req.user.userId,
             updateData,
-            { returnDocument: 'after'}
+            { returnDocument: 'after' }
         ).select("-password");
 
         if (!updatedUser) return res.status(404).json({ message: "User not found" });

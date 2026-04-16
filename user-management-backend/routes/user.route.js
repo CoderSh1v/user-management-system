@@ -8,9 +8,9 @@ user.get("/me", jwtAuth, getOwnProfile);
 
 user.patch("/me", jwtAuth, updateProfile);
 
-user.get("/", jwtAuth, authorizeRoles("admin"), getAllUsers)
+user.get("/", jwtAuth, authorizeRoles("admin","manager"), getAllUsers)
 
-user.get("/:id", jwtAuth, authorizeRoles("admin"), getUserById);
+user.get("/:id", jwtAuth, authorizeRoles("admin","manager"), getUserById);
 
 user.patch("/:id", jwtAuth, authorizeRoles("admin"), updateUser);
 
