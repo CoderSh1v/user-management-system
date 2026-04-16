@@ -1,5 +1,6 @@
 import { authorizeRoles } from "../middlewares/role.middleware.js";
 import { User } from "../models/user.model.js";
+import { hashPassword } from "../services/hashPassword.js";
 
 export const getAllUsers = async (req, res) => {
     const { role, status, search } = req.query
@@ -57,7 +58,7 @@ export const updateUser = async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(
             id,
             updateData,
-            { new: true }
+            { returnDocument: 'after'}
         ).select("-password");
 
         if (!updatedUser) return res.status(404).json({ message: "User not found" });
@@ -66,7 +67,7 @@ export const updateUser = async (req, res) => {
             message: "User successfully updated",
             user: updatedUser
         });
-        
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -90,6 +91,41 @@ export const deleteUser = async (req, res) => {
             message: "User deactivated successfully"
         });
 
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getOwnProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId).select("-password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const updateProfile = async (req, res) => {
+    try {
+        const updateData = {};
+
+        if (req.body.name) updateData.name = req.body.name;
+        if (req.body.email) updateData.email = req.body.email;
+
+        if (req.body.password) updateData.password = await hashPassword(req.body.password);
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.userId,
+            updateData,
+            { returnDocument: 'after'}
+        ).select("-password");
+
+        if (!updatedUser) return res.status(404).json({ message: "User not found" });
+
+        res.status(200).json({ updatedUser });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
