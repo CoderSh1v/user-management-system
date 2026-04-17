@@ -101,14 +101,27 @@ export default function UserDetail() {
                     fontWeight: "bold"
                 }}>
                     {user.status === "active" ? "Active" : "Inactive"}
+                    {canEdit && (
+                        <button onClick={toggleStatus} style={{marginLeft: "15px"}}>
+                            {user.status === "active" ? "Deactivate" : "Activate"}
+                        </button>
+                    )}
                 </span>
             </p>
 
-            {canEdit && (
-                <button onClick={toggleStatus}>
-                    {user.status === "active" ? "Deactivate" : "Activate"}
-                </button>
-            )}
+
+            <p><b>Created By:</b> {user.createdBy?.name || "N/A"}</p>
+            <p><b>Updated By:</b> {user.updatedBy?.name || "N/A"}</p>
+
+            <p>
+                <b>Created At:</b>{" "}
+                {new Date(user.createdAt).toLocaleDateString()}
+            </p>
+
+            <p>
+                <b>Updated At:</b>{" "}
+                {new Date(user.updatedAt).toLocaleDateString()}
+            </p>
             {canEdit && (
                 <button onClick={updateUser}>
                     Save Changes

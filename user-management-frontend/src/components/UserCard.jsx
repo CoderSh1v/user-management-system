@@ -25,16 +25,7 @@ export default function UserCard({ u, currentUser }) {
                     {u.status}
                 </span>
             </p>
-
-            {u.createdBy && (
-                <p><b>Created By:</b> {u.createdBy.name}</p>
-            )}
-
-            {u.updatedBy && (
-                <p><b>Updated By:</b> {u.updatedBy.name}</p>
-            )}
-
-            <p><b>Created At:</b> {new Date(u.createdAt).toLocaleDateString()}</p>
+ 
 
             {u._id === currentUser?._id && (
                 <p style={{ color: "gray" }}>You</p>
