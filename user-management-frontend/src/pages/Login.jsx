@@ -16,7 +16,13 @@ export default function Login() {
             const profile = await API.get("/user/me");
             localStorage.setItem("user", JSON.stringify(profile.data.user));
 
-            navigate("/dashboard");
+            const user = profile.data.user;
+
+            if (user.role === "admin" || user.role === "manager") {
+                navigate("/dashboard");
+            } else {
+                navigate("/profile");
+            }
         } catch (err) {
             alert("Login failed");
         }
