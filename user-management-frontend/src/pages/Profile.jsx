@@ -3,47 +3,75 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const navigate = useNavigate();
+    const [editData, setEditData] = useState({
+        name: "",
+        email: "",
+        password: ""
+    });
+    const logout = () => {
+        localStorage.clear();
+        window.location.href = "/";
+    };
 
-  const logout = () => {
-    localStorage.clear();
-    window.location.href = "/";
-  };
+    useEffect(() => {
+        API.get("/user/me")
+            .then(res => {
+                setUser(res.data.user);
 
-  useEffect(() => {
-    API.get("/user/me")
-      .then(res => setUser(res.data.user))
-      .catch(err => alert(err.response?.data?.message || "Error"));
-  }, []);
+                setEditData({
+                    name: res.data.user.name,
+                    email: res.data.user.email,
+                    password: ""
+                });
+            })
+            .catch(err => alert(err.response?.data?.message || "Error"));
+    }, []);;
+    const updateProfile = async () => {
+        try {
+            await API.patch("/user/me", editData);
+            alert("Profile updated");
+        } catch (err) {
+            alert(err.response?.data?.message || "Error");
+        }
+    };
+    if (!user) return <div>Loading...</div>;
 
-  if (!user) return <div>Loading...</div>;
+    return (
+        <div style={{ padding: "20px" }}>
 
-  return (
-    <div style={{ padding: "20px" }}>
+            {/* Top Bar */}
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <button onClick={() => navigate(-1)}>← Back</button>
+                <button onClick={logout}>Logout</button>
+            </div>
 
-      {/* Top Bar */}
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <button onClick={() => navigate(-1)}>← Back</button>
-        <button onClick={logout}>Logout</button>
-      </div>
+            <p><b>Name:</b></p>
+            <input
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+            />
 
-      <h2>My Profile</h2>
+            <p><b>Email:</b></p>
+            <input
+                value={editData.email}
+                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+            />
 
-      <p><b>Name:</b> {user.name}</p>
-      <p><b>Email:</b> {user.email}</p>
-      <p><b>Role:</b> {user.role}</p>
+            <p><b>Password:</b></p>
+            <input
+                type="password"
+                placeholder="New password (optional)"
+                onChange={(e) => setEditData({ ...editData, password: e.target.value })}
+            />
 
-      <p>
-        <b>Status:</b>{" "}
-        <span style={{
-          color: user.status === "active" ? "green" : "red",
-          fontWeight: "bold"
-        }}>
-          {user.status === "active" ? "Active" : "Inactive"}
-        </span>
-      </p>
+            <br /><br />
 
-    </div>
-  );
+            <button onClick={updateProfile}>
+                Save Changes
+            </button>
+
+        </div>
+    );
 }
