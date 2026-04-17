@@ -2,8 +2,12 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 import CreateUserForm from "../components/CreateUserForm";
 import UserCard from "../components/UserCard";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../components/logout";
+
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -20,7 +24,7 @@ export default function Dashboard() {
         })
             .then(res => {
                 setUsers(res.data.users);
-                setTotalPages(res.data.totalPages);
+                setTotalPages(res.data.totalPages || 1);
             })
             .catch(err => alert(err.response?.data?.message || "Error"));
     };
@@ -48,7 +52,13 @@ export default function Dashboard() {
 
     return (
         <div style={{ padding: "20px" }}>
-
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                
+            <button onClick={() => navigate("/profile")}>
+                My Profile
+            </button>
+                <button onClick={logout} >Logout</button>
+            </div>
             {currentUser?.role === "admin" && (
                 <CreateUserForm refreshUsers={fetchUsers} />
             )}
@@ -70,8 +80,11 @@ export default function Dashboard() {
                 <option value="inactive">Inactive</option>
             </select>
 
+            <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</button>
+            <span> Page {page} of {totalPages} </span>
+            <button disabled={page === totalPages } onClick={() => setPage(p => p + 1)}>Next</button>
             {users.map(u => (
-                <UserCard 
+                <UserCard
                     key={u._id}
                     u={u}
                     currentUser={currentUser}
@@ -79,9 +92,7 @@ export default function Dashboard() {
                 />
             ))}
 
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</button>
-            <span> Page {page} of {totalPages} </span>
-            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</button>
+
         </div>
     );
 }
