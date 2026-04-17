@@ -12,6 +12,9 @@ app.use(cors());
 
 app.use("/api/auth",auth)
 app.use("/api/user",user)
+app.get("/", (req, res) => {
+  res.send("Welcome to User Management System");
+});
 app.use(errorhandler)
 
 export {app} 
