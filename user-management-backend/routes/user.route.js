@@ -12,8 +12,8 @@ user.get("/", jwtAuth, authorizeRoles("admin","manager"), getAllUsers)
 
 user.get("/:id", jwtAuth, authorizeRoles("admin","manager"), getUserById);
 
-user.patch("/:id", jwtAuth, authorizeRoles("admin"), updateUser);
+user.patch("/:id", jwtAuth, authorizeRoles("admin","manager"), updateUser);
 
-user.delete("/:id", jwtAuth, authorizeRoles("admin"), deleteUser);
+user.delete("/:id", jwtAuth, authorizeRoles("admin","manager"), deleteUser);
 
 export {user}

@@ -36,7 +36,10 @@ export const getAllUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
     const id = req.params.id;
 
-    const user = await User.findById(id).select("-password")
+    const user = await User.findById(id)
+        .populate("createdBy", "name email")
+        .populate("updatedBy", "name email")
+        .select("-password")
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -84,7 +87,7 @@ export const deleteUser = async (req, res) => {
 
         if (user.status === "inactive") return res.status(400).json({ message: "User already inactive" });
 
-        if(req.user.userId == user._id) return res.status(400).json({message : "You cannot delete yourself"});
+        if (req.user.userId == user._id) return res.status(400).json({ message: "You cannot delete yourself" });
         user.status = "inactive";
         user.updatedBy = req.user.userId;
 
