@@ -84,6 +84,7 @@ export const deleteUser = async (req, res) => {
 
         if (user.status === "inactive") return res.status(400).json({ message: "User already inactive" });
 
+        if(req.user.userId == user._id) return res.status(400).json({message : "You cannot delete yourself"});
         user.status = "inactive";
         user.updatedBy = req.user.userId;
 
