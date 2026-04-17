@@ -1,98 +1,83 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+
+import TopBar from "../components/TopBar";
+import Filters from "../components/Filters";
+import Pagination from "../components/Pagination";
 import CreateUserForm from "../components/CreateUserForm";
 import UserCard from "../components/UserCard";
-import { useNavigate } from "react-router-dom";
-import { logout } from "../components/logout";
-
 
 export default function Dashboard() {
-    const navigate = useNavigate();
-    const [users, setUsers] = useState([]);
-    const [totalPages, setTotalPages] = useState(1);
+  const [users, setUsers] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
 
-    const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
-    const [page, setPage] = useState(1);
-    const [roleFilter, setRoleFilter] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
-    const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [search, setSearch] = useState("");
 
-    const fetchUsers = () => {
-        API.get("/user", {
-            params: { page, role: roleFilter, status: statusFilter, search }
-        })
-            .then(res => {
-                setUsers(res.data.users);
-                setTotalPages(res.data.totalPages || 1);
-            })
-            .catch(err => alert(err.response?.data?.message || "Error"));
-    };
+  const fetchUsers = () => {
+    API.get("/user", {
+      params: { page, role: roleFilter, status: statusFilter, search }
+    })
+      .then(res => {
+        setUsers(res.data.users);
+        setTotalPages(res.data.totalPages || 1);
+      })
+      .catch(err => alert(err.response?.data?.message || "Error"));
+  };
 
-    useEffect(() => {
-        fetchUsers();
-    }, [page, roleFilter, statusFilter, search]);
+  useEffect(() => {
+    fetchUsers();
+  }, [page, roleFilter, statusFilter, search]);
 
-    const toggleStatus = async (user) => {
-        try {
-            const newStatus = user.status === "active" ? "inactive" : "active";
+  // reset page on filter change
+  useEffect(() => {
+    setPage(1);
+  }, [roleFilter, statusFilter, search]);
 
-            await API.patch(`/user/${user._id}`, { status: newStatus });
+  return (
+    <div style={{
+      padding: "20px",
+      maxWidth: "800px",
+      margin: "auto"
+    }}>
 
-            setUsers(prev =>
-                prev.map(u =>
-                    u._id === user._id ? { ...u, status: newStatus } : u
-                )
-            );
+      <TopBar />
 
-        } catch (err) {
-            alert(err.response?.data?.message || "Error");
-        }
-    };
+      {currentUser?.role === "admin" && (
+        <CreateUserForm refreshUsers={fetchUsers} />
+      )}
 
-    return (
-        <div style={{ padding: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                
-            <button onClick={() => navigate("/profile")}>
-                My Profile
-            </button>
-                <button onClick={logout} >Logout</button>
-            </div>
-            {currentUser?.role === "admin" && (
-                <CreateUserForm refreshUsers={fetchUsers} />
-            )}
+      <h2>Users</h2>
 
-            <h2>Users</h2>
+      <Filters
+        setSearch={setSearch}
+        setRoleFilter={setRoleFilter}
+        setStatusFilter={setStatusFilter}
+      />
 
-            <input placeholder="Search" onChange={(e) => setSearch(e.target.value)} />
+      {users.length === 0 && (
+        <p>No users found</p>
+      )}
 
-            <select onChange={(e) => setRoleFilter(e.target.value)}>
-                <option value="">All Roles</option>
-                <option value="admin">Admin</option>
-                <option value="manager">Manager</option>
-                <option value="user">User</option>
-            </select>
+      {users.map(u => (
+        <UserCard
+          key={u._id}
+          u={u}
+          currentUser={currentUser}
+        />
+      ))}
 
-            <select onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-            </select>
-
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</button>
-            <span> Page {page} of {totalPages} </span>
-            <button disabled={page === totalPages } onClick={() => setPage(p => p + 1)}>Next</button>
-            {users.map(u => (
-                <UserCard
-                    key={u._id}
-                    u={u}
-                    currentUser={currentUser}
-                    toggleStatus={toggleStatus}
-                />
-            ))}
-
-
-        </div>
-    );
+      {users.length > 0 && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
+        />
+      )}
+    </div>
+  );
 }
