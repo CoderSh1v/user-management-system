@@ -8,17 +8,26 @@ export default function Dashboard() {
     useEffect(() => {
         API.get("/user")
             .then(res => setUsers(res.data.users))
-            .catch(err => console.log(err));
+            .catch(err => alert(err.response?.data?.message || "Something went wrong"));
     }, []);
 
-    const deleteUser = (id) => {
-        if (!window.confirm("Are you sure?")) return;
+    const toggleStatus = async (user) => {
+        try {
+            const newStatus = user.status === "active" ? "inactive" : "active";
 
-        API.delete(`/user/${id}`)
-            .then(() => {
-                setUsers(prev => prev.filter(u => u._id !== id));
-            })
-            .catch(err => console.log(err));
+            await API.patch(`/user/${user._id}`, {
+                status: newStatus
+            });
+
+            setUsers(prev =>
+                prev.map(u =>
+                    u._id === user._id ? { ...u, status: newStatus } : u
+                )
+            );
+
+        } catch (err) {
+            alert(err.response?.data?.message || "Error");
+        }
     };
 
     return (
@@ -32,12 +41,24 @@ export default function Dashboard() {
                     marginBottom: "10px"
                 }}>
                     <p><b>Name:</b> {u.name}</p>
+                    <p><b>Email:</b> {u.email}</p>
                     <p><b>Role:</b> {u.role}</p>
 
-                    {currentUser?.role === "admin" && (
-                        <button onClick={() => deleteUser(u._id)}>
-                            Delete
+                    <p>
+                        <b>Status:</b>{" "}
+                        <span style={{ color: u.status === "active" ? "green" : "red" }}>
+                            {u.status}
+                        </span>
+                    </p>
+
+                    {currentUser?.role === "admin" && u._id !== currentUser._id && (
+                        <button onClick={() => toggleStatus(u)}>
+                            {u.status === "active" ? "Deactivate" : "Activate"}
                         </button>
+                    )}
+
+                    {u._id === currentUser?._id && (
+                        <p style={{ color: "gray" }}>You</p>
                     )}
                 </div>
             ))}
